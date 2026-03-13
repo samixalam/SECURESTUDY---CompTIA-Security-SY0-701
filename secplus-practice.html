@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureStudy — CompTIA Security+ SY0-701</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0d1320;
+    --surface2: #111a2e;
+    --border: #1e2d4a;
+    --accent: #00e5ff;
+    --accent2: #7b5ea7;
+    --accent3: #ff6b6b;
+    --accent4: #51cf66;
+    --text: #c9d6f0;
+    --text-dim: #5a7090;
+    --text-bright: #eaf2ff;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,229,255,.05) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(123,94,167,.06) 0%, transparent 60%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ── SCANLINE ── */
+  body::after {
+    content:'';
+    position:fixed; inset:0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+    pointer-events:none; z-index:0;
+  }
+
+  #app { position:relative; z-index:1; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,12,20,.9);
+    backdrop-filter: blur(12px);
+    position:sticky; top:0; z-index:100;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size:.85rem;
+    color: var(--accent);
+    letter-spacing:.1em;
+  }
+  .logo span { color: var(--text-dim); }
+  .badge {
+    font-family: var(--mono);
+    font-size:.65rem;
+    padding:.2rem .6rem;
+    border: 1px solid var(--border);
+    border-radius:2px;
+    color: var(--text-dim);
+    letter-spacing:.05em;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display:none; }
+  .screen.active { display:block; }
+
+  /* ── HOME ── */
+  .home-hero {
+    max-width:860px; margin:0 auto;
+    padding:5rem 2rem 2rem;
+    text-align:center;
+  }
+  .home-hero h1 {
+    font-family: var(--mono);
+    font-size:clamp(1.8rem,4vw,3rem);
+    color: var(--text-bright);
+    line-height:1.2;
+    margin-bottom:.75rem;
+  }
+  .home-hero h1 em {
+    font-style:normal;
+    color: var(--accent);
+  }
+  .home-hero p {
+    color: var(--text-dim);
+    font-size:1.05rem;
+    font-weight:300;
+    max-width:520px; margin:0 auto 3rem;
+    line-height:1.7;
+  }
+  .mode-cards {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:1.5rem; max-width:720px; margin:0 auto 3rem;
+  }
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:8px;
+    padding:2rem 1.5rem;
+    cursor:pointer;
+    text-align:left;
+    transition: all .25s ease;
+    position:relative; overflow:hidden;
+  }
+  .mode-card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity:0; transition: opacity .25s;
+  }
+  .mode-card:hover { border-color: var(--accent); transform:translateY(-3px); }
+  .mode-card:hover::before { opacity:1; }
+  .mode-card .icon {
+    font-size:2rem; margin-bottom:1rem;
+  }
+  .mode-card h2 {
+    font-family: var(--mono);
+    font-size:1rem;
+    color: var(--text-bright);
+    margin-bottom:.5rem;
+  }
+  .mode-card p { font-size:.875rem; color: var(--text-dim); line-height:1.6; }
+  .mode-card .pill {
+    display:inline-block;
+    margin-top:1rem;
+    font-family: var(--mono);
+    font-size:.65rem;
+    padding:.2rem .5rem;
+    background: rgba(0,229,255,.08);
+    border: 1px solid rgba(0,229,255,.2);
+    border-radius:3px;
+    color: var(--accent);
+  }
+  .stats-row {
+    display:flex; justify-content:center; gap:3rem;
+    padding:2rem 0;
+    border-top:1px solid var(--border);
+    max-width:720px; margin:0 auto;
+  }
+  .stat { text-align:center; }
+  .stat .num {
+    font-family: var(--mono);
+    font-size:1.8rem;
+    color: var(--accent);
+    display:block;
+  }
+  .stat .lbl { font-size:.75rem; color: var(--text-dim); letter-spacing:.05em; }
+
+  /* ── CUSTOM BUILDER ── */
+  .builder-wrap {
+    max-width:700px; margin:0 auto;
+    padding:3rem 2rem;
+  }
+  .builder-wrap h2 {
+    font-family: var(--mono);
+    font-size:1.3rem;
+    color: var(--text-bright);
+    margin-bottom:.4rem;
+  }
+  .builder-wrap .sub {
+    color: var(--text-dim); font-size:.875rem;
+    margin-bottom:2.5rem;
+  }
+  .field { margin-bottom:2rem; }
+  .field label {
+    display:block;
+    font-family: var(--mono);
+    font-size:.75rem;
+    color: var(--accent);
+    letter-spacing:.08em;
+    margin-bottom:.75rem;
+  }
+  .field-note { color: var(--text-dim); font-size:.8rem; margin-top:.5rem; }
+  .topic-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:.75rem;
+  }
+  .topic-toggle {
+    display:flex; align-items:center; gap:.6rem;
+    padding:.75rem 1rem;
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    cursor:pointer;
+    transition: all .2s;
+    font-size:.875rem;
+    color: var(--text);
+    user-select:none;
+  }
+  .topic-toggle:hover { border-color: var(--accent2); }
+  .topic-toggle.selected {
+    border-color: var(--accent);
+    background: rgba(0,229,255,.06);
+    color: var(--text-bright);
+  }
+  .topic-toggle .dot {
+    width:10px; height:10px; border-radius:50%;
+    border:2px solid var(--border);
+    flex-shrink:0;
+    transition: all .2s;
+  }
+  .topic-toggle.selected .dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow:0 0 8px rgba(0,229,255,.5);
+  }
+  .num-row { display:flex; gap:.75rem; }
+  .num-btn {
+    padding:.6rem 1.2rem;
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size:.875rem;
+    cursor:pointer;
+    transition: all .2s;
+  }
+  .num-btn:hover, .num-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,255,.06);
+  }
+  input[type=number] {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size:.875rem;
+    padding:.6rem 1rem;
+    width:100px;
+    outline:none;
+    transition: border-color .2s;
+  }
+  input[type=number]:focus { border-color: var(--accent); }
+  .toggle-row { display:flex; gap:.75rem; }
+  .toggle-btn {
+    padding:.6rem 1.4rem;
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color: var(--text-dim);
+    font-size:.875rem;
+    cursor:pointer;
+    transition: all .2s;
+  }
+  .toggle-btn.active {
+    border-color: var(--accent);
+    color: var(--text-bright);
+    background: rgba(0,229,255,.06);
+  }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    display:inline-flex; align-items:center; gap:.6rem;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-size:.85rem;
+    font-weight:700;
+    padding:.9rem 2rem;
+    border:none; border-radius:6px;
+    cursor:pointer;
+    transition: all .2s;
+    letter-spacing:.05em;
+  }
+  .btn-primary:hover { background:#33eaff; transform:translateY(-1px); box-shadow:0 6px 24px rgba(0,229,255,.2); }
+  .btn-secondary {
+    display:inline-flex; align-items:center; gap:.6rem;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size:.85rem;
+    padding:.9rem 1.8rem;
+    border:1px solid var(--border);
+    border-radius:6px;
+    cursor:pointer;
+    transition: all .2s;
+    letter-spacing:.04em;
+  }
+  .btn-secondary:hover { border-color: var(--text); color: var(--text-bright); }
+  .btn-row { display:flex; gap:1rem; margin-top:2.5rem; }
+
+  /* ── EXAM SCREEN ── */
+  .exam-layout {
+    display:grid; grid-template-columns:1fr 280px;
+    gap:1.5rem;
+    max-width:1100px; margin:0 auto;
+    padding:2rem;
+    min-height: calc(100vh - 60px);
+    align-items:start;
+  }
+  .exam-main { }
+  .exam-sidebar { position:sticky; top:80px; }
+
+  .exam-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:1.5rem;
+  }
+  .exam-progress-label {
+    font-family: var(--mono);
+    font-size:.75rem;
+    color: var(--text-dim);
+    letter-spacing:.05em;
+  }
+  .exam-progress-bar {
+    height:3px; background: var(--border);
+    border-radius:2px; margin:.5rem 0 1.5rem;
+    overflow:hidden;
+  }
+  .exam-progress-fill {
+    height:100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius:2px;
+    transition: width .4s ease;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:2rem;
+    margin-bottom:1.5rem;
+  }
+  .q-meta {
+    display:flex; align-items:center; gap:.75rem;
+    margin-bottom:1.5rem;
+  }
+  .q-num {
+    font-family: var(--mono);
+    font-size:.75rem;
+    color: var(--text-dim);
+  }
+  .q-domain {
+    font-size:.7rem;
+    padding:.15rem .6rem;
+    background: rgba(123,94,167,.15);
+    border:1px solid rgba(123,94,167,.3);
+    border-radius:3px;
+    color: #b39ddb;
+    font-family: var(--mono);
+  }
+  .q-flag {
+    margin-left:auto;
+    background: transparent;
+    border:1px solid var(--border);
+    border-radius:4px;
+    color: var(--text-dim);
+    font-size:.75rem;
+    font-family: var(--mono);
+    padding:.2rem .6rem;
+    cursor:pointer;
+    transition: all .2s;
+  }
+  .q-flag.flagged {
+    border-color: #ffc107;
+    color: #ffc107;
+    background: rgba(255,193,7,.08);
+  }
+  .q-text {
+    font-size:1.05rem;
+    color: var(--text-bright);
+    line-height:1.75;
+    margin-bottom:2rem;
+    font-weight:300;
+  }
+  .q-text code {
+    font-family: var(--mono);
+    font-size:.9em;
+    background: rgba(0,229,255,.08);
+    border:1px solid rgba(0,229,255,.15);
+    padding:.1rem .4rem;
+    border-radius:3px;
+    color: var(--accent);
+  }
+  .answers { display:flex; flex-direction:column; gap:.75rem; }
+  .answer-opt {
+    display:flex; align-items:flex-start; gap:1rem;
+    padding:1rem 1.25rem;
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    cursor:pointer;
+    transition: all .2s;
+    text-align:left;
+  }
+  .answer-opt:hover { border-color: var(--accent2); background: rgba(123,94,167,.05); }
+  .answer-opt.selected {
+    border-color: var(--accent);
+    background: rgba(0,229,255,.06);
+  }
+  .answer-opt.correct {
+    border-color: var(--accent4);
+    background: rgba(81,207,102,.08);
+  }
+  .answer-opt.incorrect {
+    border-color: var(--accent3);
+    background: rgba(255,107,107,.08);
+  }
+  .opt-letter {
+    font-family: var(--mono);
+    font-size:.8rem;
+    color: var(--text-dim);
+    width:20px; flex-shrink:0;
+    margin-top:1px;
+  }
+  .answer-opt.selected .opt-letter { color: var(--accent); }
+  .answer-opt.correct .opt-letter { color: var(--accent4); }
+  .answer-opt.incorrect .opt-letter { color: var(--accent3); }
+  .opt-text { font-size:.925rem; line-height:1.6; color: var(--text); }
+  .answer-opt.selected .opt-text { color: var(--text-bright); }
+
+  .explanation {
+    margin-top:1.5rem;
+    padding:1rem 1.25rem;
+    background: rgba(0,229,255,.04);
+    border-left:3px solid var(--accent);
+    border-radius:0 6px 6px 0;
+    font-size:.875rem;
+    line-height:1.7;
+    color: var(--text);
+    display:none;
+  }
+  .explanation.visible { display:block; }
+  .explanation strong { color: var(--accent); font-family: var(--mono); font-size:.8rem; display:block; margin-bottom:.4rem; }
+
+  .nav-row {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:1.5rem;
+  }
+
+  /* SIDEBAR */
+  .sidebar-card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:1.25rem;
+    margin-bottom:1rem;
+  }
+  .sidebar-title {
+    font-family: var(--mono);
+    font-size:.7rem;
+    color: var(--text-dim);
+    letter-spacing:.08em;
+    margin-bottom:1rem;
+  }
+  .timer-display {
+    font-family: var(--mono);
+    font-size:2rem;
+    color: var(--text-bright);
+    text-align:center;
+    letter-spacing:.1em;
+  }
+  .timer-display.warning { color: #ffc107; }
+  .timer-display.critical { color: var(--accent3); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  .q-grid {
+    display:grid; grid-template-columns:repeat(6,1fr);
+    gap:4px;
+  }
+  .q-dot {
+    aspect-ratio:1;
+    border-radius:3px;
+    background: var(--border);
+    border:1px solid transparent;
+    cursor:pointer;
+    font-family: var(--mono);
+    font-size:.6rem;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text-dim);
+    transition: all .15s;
+  }
+  .q-dot:hover { border-color: var(--accent); }
+  .q-dot.answered { background: rgba(0,229,255,.15); border-color: rgba(0,229,255,.3); color: var(--accent); }
+  .q-dot.flagged { background: rgba(255,193,7,.15); border-color: rgba(255,193,7,.4); color: #ffc107; }
+  .q-dot.current { border-color: var(--accent); background: rgba(0,229,255,.25); color: var(--text-bright); }
+
+  .sidebar-legend { display:flex; flex-direction:column; gap:.4rem; margin-top:.75rem; }
+  .legend-item { display:flex; align-items:center; gap:.5rem; font-size:.75rem; color: var(--text-dim); }
+  .legend-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+
+  /* ── RESULTS ── */
+  .results-wrap {
+    max-width:900px; margin:0 auto;
+    padding:3rem 2rem;
+  }
+  .result-hero {
+    text-align:center;
+    padding:3rem 2rem;
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:2rem;
+    position:relative; overflow:hidden;
+  }
+  .result-hero::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,229,255,.06), transparent);
+  }
+  .result-hero h2 {
+    font-family: var(--mono);
+    font-size:2.5rem;
+    color: var(--text-bright);
+    margin-bottom:.5rem;
+    position:relative;
+  }
+  .result-hero .verdict {
+    font-family: var(--mono);
+    font-size:1.1rem;
+    padding:.5rem 2rem;
+    border-radius:4px;
+    display:inline-block;
+    margin-bottom:1.5rem;
+    position:relative;
+  }
+  .verdict.pass {
+    background: rgba(81,207,102,.15);
+    border:1px solid rgba(81,207,102,.4);
+    color: var(--accent4);
+  }
+  .verdict.fail {
+    background: rgba(255,107,107,.12);
+    border:1px solid rgba(255,107,107,.35);
+    color: var(--accent3);
+  }
+  .score-big {
+    font-family: var(--mono);
+    font-size:4rem;
+    color: var(--accent);
+    display:block;
+    line-height:1;
+    position:relative;
+  }
+  .score-label { font-size:.875rem; color: var(--text-dim); margin-top:.3rem; position:relative; }
+  .results-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:1.5rem; margin-bottom:2rem;
+  }
+  .results-stat-card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:1.5rem;
+  }
+  .results-stat-card .lbl {
+    font-family: var(--mono);
+    font-size:.7rem;
+    color: var(--text-dim);
+    letter-spacing:.08em;
+    margin-bottom:.5rem;
+  }
+  .results-stat-card .val {
+    font-family: var(--mono);
+    font-size:1.8rem;
+    color: var(--text-bright);
+  }
+  .chart-card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:1.5rem;
+    margin-bottom:2rem;
+  }
+  .chart-card h3 {
+    font-family: var(--mono);
+    font-size:.85rem;
+    color: var(--text-dim);
+    letter-spacing:.06em;
+    margin-bottom:1.5rem;
+  }
+  .chart-layout { display:flex; align-items:center; gap:2rem; flex-wrap:wrap; }
+  canvas#pieChart { max-width:220px; max-height:220px; }
+  .chart-legend { flex:1; min-width:200px; }
+  .legend-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.5rem 0;
+    border-bottom:1px solid var(--border);
+    font-size:.875rem;
+  }
+  .legend-row:last-child { border-bottom:none; }
+  .legend-row .left { display:flex; align-items:center; gap:.6rem; }
+  .legend-swatch { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+  .legend-row .pct { font-family: var(--mono); font-size:.8rem; }
+
+  .review-section { margin-top:2rem; }
+  .review-section h3 {
+    font-family: var(--mono);
+    font-size:.85rem;
+    color: var(--text-dim);
+    letter-spacing:.06em;
+    margin-bottom:1rem;
+    display:flex; align-items:center; gap:.75rem;
+  }
+  .review-q {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    margin-bottom:1rem;
+    overflow:hidden;
+  }
+  .review-q-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.875rem 1.25rem;
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+    transition: background .15s;
+  }
+  .review-q-header:hover { background: rgba(255,255,255,.02); }
+  .review-q-header .left { display:flex; align-items:center; gap:.75rem; font-size:.875rem; }
+  .review-q-header .indicator {
+    width:8px; height:8px; border-radius:50%;
+  }
+  .indicator.correct { background: var(--accent4); }
+  .indicator.incorrect { background: var(--accent3); }
+  .indicator.skipped { background: var(--text-dim); }
+  .review-q-body { padding:1.25rem; display:none; font-size:.875rem; line-height:1.7; }
+  .review-q-body.open { display:block; }
+  .review-q-body .q { color: var(--text-bright); margin-bottom:1rem; }
+  .review-q-body .your-ans { margin-bottom:.5rem; }
+  .review-q-body .correct-ans { color: var(--accent4); }
+  .review-q-body .expl { color: var(--text-dim); margin-top:.75rem; padding-top:.75rem; border-top:1px solid var(--border); }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:768px){
+    .exam-layout { grid-template-columns:1fr; }
+    .exam-sidebar { position:static; }
+    .mode-cards { grid-template-columns:1fr; }
+    .results-grid { grid-template-columns:1fr; }
+    .topic-grid { grid-template-columns:1fr; }
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-in { animation: fadeIn .4s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+  .spinner {
+    display:inline-block; width:16px; height:16px;
+    border:2px solid rgba(0,229,255,.2);
+    border-top-color: var(--accent);
+    border-radius:50%;
+    animation: spin .6s linear infinite;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="logo">SECURE<span>STUDY</span></div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <span class="badge" id="topTimerBadge" style="display:none"></span>
+      <span class="badge">SY0-701</span>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div id="screenHome" class="screen active">
+    <div class="home-hero fade-in">
+      <h1>Nail Your<br><em>Security+</em></h1>
+      <p>A full practice suite for CompTIA Security+ SY0-701. Timed exams, custom papers, instant feedback, and detailed results.</p>
+      <div class="mode-cards">
+        <div class="mode-card" onclick="startFullExam()">
+          <div class="icon">🎯</div>
+          <h2>PRACTICE EXAM</h2>
+          <p>Full 90-question exam mirroring the real SY0-701 format. 90 minutes, all 5 domains, scaled score and pass/fail verdict.</p>
+          <span class="pill">90 QUESTIONS · 90 MIN</span>
+        </div>
+        <div class="mode-card" onclick="showScreen('screenBuilder')">
+          <div class="icon">⚙️</div>
+          <h2>CUSTOM PAPER</h2>
+          <p>Pick your topics, set the number of questions, and choose timed or untimed. Perfect for targeting weak areas.</p>
+          <span class="pill">YOUR RULES</span>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><span class="num" id="statQ">150+</span><span class="lbl">QUESTIONS</span></div>
+        <div class="stat"><span class="num">5</span><span class="lbl">DOMAINS</span></div>
+        <div class="stat"><span class="num">750</span><span class="lbl">PASS SCORE</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILDER -->
+  <div id="screenBuilder" class="screen">
+    <div class="builder-wrap fade-in">
+      <h2>Custom Practice Paper</h2>
+      <p class="sub">Configure your exam. Only questions from selected domains will be used.</p>
+
+      <div class="field">
+        <label>DOMAINS</label>
+        <div class="topic-grid" id="topicGrid"></div>
+      </div>
+
+      <div class="field">
+        <label>NUMBER OF QUESTIONS</label>
+        <div class="num-row">
+          <button class="num-btn" onclick="setQCount(10,this)">10</button>
+          <button class="num-btn active" onclick="setQCount(25,this)">25</button>
+          <button class="num-btn" onclick="setQCount(50,this)">50</button>
+          <button class="num-btn" onclick="setQCount(75,this)">75</button>
+          <input type="number" id="customQNum" min="5" max="150" value="25" oninput="customQInput(this)">
+        </div>
+        <p class="field-note" id="qAvailNote"></p>
+      </div>
+
+      <div class="field">
+        <label>TIMER</label>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="timerOff" onclick="setTimed(false)">⏸ Untimed</button>
+          <button class="toggle-btn active" id="timerOn" onclick="setTimed(true)">⏱ Timed (1 min/question)</button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="showScreen('screenHome')">← Back</button>
+        <button class="btn-primary" onclick="startCustomExam()">Start Exam →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAM -->
+  <div id="screenExam" class="screen">
+    <div class="exam-layout">
+      <div class="exam-main">
+        <div class="exam-header">
+          <span class="exam-progress-label" id="examProgressLabel">Question 1 of 90</span>
+          <button class="btn-secondary" style="font-size:.75rem;padding:.4rem .9rem" onclick="confirmEndExam()">End Exam</button>
+        </div>
+        <div class="exam-progress-bar"><div class="exam-progress-fill" id="examProgressFill" style="width:0%"></div></div>
+
+        <div class="question-card" id="questionCard">
+          <div class="q-meta">
+            <span class="q-num" id="qNum">Q1</span>
+            <span class="q-domain" id="qDomain">Domain</span>
+            <button class="q-flag" id="flagBtn" onclick="toggleFlag()">🚩 Flag</button>
+          </div>
+          <p class="q-text" id="qText">Loading...</p>
+          <div class="answers" id="answersDiv"></div>
+          <div class="explanation" id="explanationDiv"></div>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn-secondary" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+          <button class="btn-primary" id="nextBtn" onclick="navigate(1)">Next →</button>
+        </div>
+      </div>
+
+      <div class="exam-sidebar">
+        <div class="sidebar-card" id="timerCard" style="display:none">
+          <div class="sidebar-title">TIME REMAINING</div>
+          <div class="timer-display" id="timerDisplay">90:00</div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-title">PROGRESS</div>
+          <div class="q-grid" id="qGrid"></div>
+          <div class="sidebar-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(0,229,255,.25);border:1px solid rgba(0,229,255,.5)"></div>Current</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(0,229,255,.15);border:1px solid rgba(0,229,255,.3)"></div>Answered</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.4)"></div>Flagged</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--border)"></div>Unanswered</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screenResults" class="screen">
+    <div class="results-wrap fade-in">
+      <div class="result-hero">
+        <div class="verdict" id="verdictBadge">PASS</div>
+        <span class="score-big" id="scoreBig">82%</span>
+        <p class="score-label" id="scoreLabel">Scaled Score: 820 / 900</p>
+        <p style="margin-top:1rem;color:var(--text-dim);font-size:.875rem" id="resultSubtext"></p>
+      </div>
+
+      <div class="results-grid">
+        <div class="results-stat-card">
+          <div class="lbl">CORRECT</div>
+          <div class="val" id="resCorrect" style="color:var(--accent4)">-</div>
+        </div>
+        <div class="results-stat-card">
+          <div class="lbl">INCORRECT</div>
+          <div class="val" id="resIncorrect" style="color:var(--accent3)">-</div>
+        </div>
+        <div class="results-stat-card">
+          <div class="lbl">SKIPPED</div>
+          <div class="val" id="resSkipped" style="color:var(--text-dim)">-</div>
+        </div>
+        <div class="results-stat-card">
+          <div class="lbl">TIME TAKEN</div>
+          <div class="val" id="resTime" style="font-size:1.2rem">-</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>PERFORMANCE BY DOMAIN</h3>
+        <div class="chart-layout">
+          <canvas id="pieChart" width="220" height="220"></canvas>
+          <div class="chart-legend" id="chartLegend"></div>
+        </div>
+      </div>
+
+      <div class="review-section">
+        <h3>QUESTION REVIEW <span style="font-size:.7rem;color:var(--text-dim)">— click to expand</span></h3>
+        <div id="reviewList"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="showScreen('screenHome')">← Home</button>
+        <button class="btn-primary" onclick="retakeExam()">Retake →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  QUESTION BANK  —  CompTIA Security+ SY0-701
+//  Domains:
+//  1 = General Security Concepts (12%)
+//  2 = Threats, Vulnerabilities & Mitigations (22%)
+//  3 = Security Architecture (18%)
+//  4 = Security Operations (28%)
+//  5 = Security Program Management & Oversight (20%)
+// ═══════════════════════════════════════════════
+
+const DOMAINS = {
+  1: { name:'General Security Concepts', short:'General', color:'#00e5ff' },
+  2: { name:'Threats, Vulnerabilities & Mitigations', short:'Threats & Vulns', color:'#ff6b6b' },
+  3: { name:'Security Architecture', short:'Architecture', color:'#7b5ea7' },
+  4: { name:'Security Operations', short:'Operations', color:'#51cf66' },
+  5: { name:'Program Management & Oversight', short:'Management', color:'#ffc107' }
+};
+
+const QUESTIONS = [
+// ── DOMAIN 1: General Security Concepts ──────────────────────────────
+{d:1,q:"Which security principle ensures that users only have access to the resources they need to perform their job?",a:["Defence in depth","Least privilege","Separation of duties","Zero trust"],c:1,e:"Least privilege means granting users only the minimum permissions required for their role, reducing attack surface."},
+{d:1,q:"What type of encryption uses the same key for both encryption and decryption?",a:["Asymmetric","Hashing","Symmetric","Public key"],c:2,e:"Symmetric encryption (e.g., AES) uses a single shared key, making it fast but requiring secure key distribution."},
+{d:1,q:"Which of the following is an example of 'something you are' in multi-factor authentication?",a:["PIN","Smart card","Password","Fingerprint"],c:3,e:"Biometrics like fingerprints represent the 'inherence factor' — something you are. PINs/passwords are something you know; smart cards are something you have."},
+{d:1,q:"A hash function is primarily used to verify what?",a:["Confidentiality of data","Authentication of the sender","Integrity of data","Non-repudiation"],c:2,e:"Hashing produces a fixed-length digest to verify that data has not been altered, ensuring integrity."},
+{d:1,q:"Which cryptographic concept provides proof that a sender cannot deny having sent a message?",a:["Confidentiality","Integrity","Non-repudiation","Availability"],c:2,e:"Non-repudiation, often implemented via digital signatures, prevents a sender from denying their actions."},
+{d:1,q:"What does PKI stand for?",a:["Private Key Infrastructure","Public Key Infrastructure","Proxy Key Interface","Protected Key Integration"],c:1,e:"PKI (Public Key Infrastructure) manages digital certificates and public-key encryption to enable secure communications."},
+{d:1,q:"Which of the following algorithms is classified as asymmetric?",a:["AES","3DES","RSA","Blowfish"],c:2,e:"RSA is an asymmetric algorithm using a public/private key pair. AES, 3DES, and Blowfish are all symmetric."},
+{d:1,q:"What is the primary purpose of a digital certificate?",a:["Encrypt files on disk","Bind a public key to an identity","Store passwords securely","Provide network access control"],c:1,e:"Digital certificates bind a public key to an entity's identity, validated by a trusted Certificate Authority (CA)."},
+{d:1,q:"Which concept involves layering multiple security controls so that if one fails, others remain?",a:["Least privilege","Separation of duties","Defence in depth","Zero trust"],c:2,e:"Defence in depth employs multiple overlapping security layers so no single control failure leads to a full breach."},
+{d:1,q:"What is the difference between authentication and authorisation?",a:["Authentication verifies access rights; authorisation verifies identity","They are the same concept","Authentication verifies identity; authorisation verifies access rights","Authorisation happens before authentication"],c:2,e:"Authentication confirms who you are; authorisation determines what you are allowed to do once authenticated."},
+{d:1,q:"Which hashing algorithm produces a 256-bit output?",a:["MD5","SHA-1","SHA-256","SHA-512"],c:2,e:"SHA-256 produces a 256-bit (32-byte) hash. MD5 = 128-bit, SHA-1 = 160-bit, SHA-512 = 512-bit."},
+{d:1,q:"What term describes a system that assumes every user and device is untrusted by default, even inside the network perimeter?",a:["Defence in depth","Zero trust","Segmentation","Least privilege"],c:1,e:"Zero trust operates on 'never trust, always verify' — every request is authenticated regardless of network location."},
+{d:1,q:"Which of the following is a key feature of a Hardware Security Module (HSM)?",a:["Performing deep packet inspection","Secure generation and storage of cryptographic keys","Scanning for malware in real-time","Providing VPN services"],c:1,e:"HSMs are dedicated hardware devices designed to securely generate, store, and manage cryptographic keys."},
+{d:1,q:"What is a Certificate Revocation List (CRL)?",a:["A list of expired domain names","A list of certificates that have been revoked before expiry","A list of approved CAs","A list of weak cipher suites"],c:1,e:"A CRL is maintained by a CA and lists certificates that have been revoked and should no longer be trusted."},
+{d:1,q:"Which principle requires that critical tasks need more than one person to complete, preventing any single individual from abusing their access?",a:["Least privilege","Separation of duties","Job rotation","Mandatory vacation"],c:1,e:"Separation of duties divides critical functions among multiple users, preventing fraud and insider threats."},
+{d:1,q:"What does OCSP stand for and what is its purpose?",a:["Online Certificate Status Protocol — checks if a certificate is still valid","Open Cryptographic Standard Protocol — encrypts web traffic","Operational Compliance Security Policy — governs user behaviour","Offline Certificate Storage Procedure — archives old certs"],c:0,e:"OCSP allows a client to query a CA in real-time to check whether a specific certificate has been revoked, as an alternative to downloading full CRLs."},
+{d:1,q:"Which key agreement protocol is used to securely exchange cryptographic keys over an insecure channel?",a:["RSA","Diffie-Hellman","AES","SHA-256"],c:1,e:"Diffie-Hellman allows two parties to establish a shared secret over a public channel without transmitting the secret itself."},
+{d:1,q:"What is steganography?",a:["Encrypting data with a public key","Hiding data within another file or medium","Analysing network traffic patterns","Breaking encryption ciphers"],c:1,e:"Steganography conceals information within ordinary files (images, audio) to avoid detection, as distinct from encryption which hides content."},
+
+// ── DOMAIN 2: Threats, Vulnerabilities & Mitigations ─────────────────
+{d:2,q:"Which type of malware self-replicates by attaching itself to legitimate programs?",a:["Trojan","Worm","Virus","Spyware"],c:2,e:"A virus attaches itself to host files and requires human interaction (executing the file) to spread, unlike worms which self-propagate across networks."},
+{d:2,q:"An attacker sends an email pretending to be the CEO, requesting an urgent wire transfer. This is an example of:",a:["Vishing","Whaling","Smishing","Pharming"],c:1,e:"Whaling is a targeted phishing attack aimed at high-profile individuals (C-suite executives). The attacker impersonates an authority figure to manipulate victims."},
+{d:2,q:"What is a zero-day vulnerability?",a:["A vulnerability discovered on the day a product launches","A flaw that has no known patch or fix yet","A critical vulnerability rated 0 in CVSS","A vulnerability in zero-trust architectures"],c:1,e:"A zero-day is a vulnerability unknown to the vendor (or for which no patch exists), giving defenders 'zero days' to prepare."},
+{d:2,q:"Which attack type overwhelms a server with traffic from a single source?",a:["DDoS","DoS","Man-in-the-middle","Replay"],c:1,e:"A Denial of Service (DoS) attack comes from a single source, whereas a Distributed DoS (DDoS) uses multiple compromised systems."},
+{d:2,q:"A user reports that their browser is being redirected to fake websites even though they typed the correct address. This is most likely:",a:["Phishing","DNS poisoning","SQL injection","Cross-site scripting"],c:1,e:"DNS poisoning (cache poisoning) corrupts DNS resolver caches, redirecting users to malicious sites even when correct URLs are entered."},
+{d:2,q:"What is a RAT in the context of cybersecurity?",a:["Risk Assessment Tool","Remote Access Trojan","Real-time Audit Tracker","Rootkit Analysis Technique"],c:1,e:"A Remote Access Trojan (RAT) gives attackers covert remote control of a compromised system, often including keylogging and screen capture."},
+{d:2,q:"An attacker intercepts communication between two parties without either knowing. This is called:",a:["Replay attack","On-path (man-in-the-middle) attack","Eavesdropping","Session hijacking"],c:1,e:"An on-path (MITM) attack positions the attacker between two communicating parties to intercept, read, or modify traffic."},
+{d:2,q:"Which vulnerability involves injecting malicious SQL code into an input field to manipulate a database?",a:["Cross-site scripting (XSS)","Buffer overflow","SQL injection","Directory traversal"],c:2,e:"SQL injection occurs when unsanitised user input is included in database queries, potentially allowing data extraction or manipulation."},
+{d:2,q:"What is the purpose of a honeypot?",a:["Filter spam emails","Lure attackers to a decoy system to study their techniques","Encrypt sensitive data at rest","Provide redundancy for critical servers"],c:1,e:"Honeypots are intentionally vulnerable decoy systems designed to attract attackers, gather threat intelligence, and detect intrusions."},
+{d:2,q:"Which social engineering technique involves following an authorised person through a secure door without swiping a badge?",a:["Vishing","Tailgating","Shoulder surfing","Baiting"],c:1,e:"Tailgating (or piggybacking) is physically following an authorised person into a restricted area, exploiting politeness or inattention."},
+{d:2,q:"A piece of malware encrypts all files on a system and demands payment. What type is it?",a:["Spyware","Ransomware","Adware","Rootkit"],c:1,e:"Ransomware encrypts victim data and demands a ransom (usually crypto) for the decryption key. Examples include WannaCry and LockBit."},
+{d:2,q:"What does a rootkit do?",a:["Replicates itself across networks","Hides its presence and the presence of other malware on a system","Records keystrokes","Displays unwanted advertisements"],c:1,e:"Rootkits operate at a low level (kernel or bootloader) to conceal their existence and that of other malicious software from the OS and security tools."},
+{d:2,q:"Which type of XSS stores the malicious script on the server and serves it to all visiting users?",a:["Reflected XSS","DOM-based XSS","Stored XSS","Blind XSS"],c:2,e:"Stored (persistent) XSS embeds malicious script in a database; every user who views the affected page executes it — far more dangerous than reflected XSS."},
+{d:2,q:"What is the MITRE ATT&CK framework?",a:["A vulnerability scoring system","A knowledge base of adversary tactics, techniques, and procedures","A penetration testing methodology","A government compliance standard"],c:1,e:"MITRE ATT&CK is a globally-accessible knowledge base of real-world adversary behaviour used for threat modelling, detection, and response."},
+{d:2,q:"An attacker floods a web application login page with username/password combinations sourced from a previously leaked database. This is:",a:["Brute force","Credential stuffing","Password spraying","Dictionary attack"],c:1,e:"Credential stuffing uses leaked username/password pairs from one breach to attempt access to other services, exploiting password reuse."},
+{d:2,q:"What is a supply chain attack?",a:["Attacking logistics and delivery infrastructure","Compromising a software or hardware vendor to target their customers downstream","Attacking retail payment systems","Exploiting ERP system vulnerabilities"],c:1,e:"Supply chain attacks compromise a trusted vendor or software update mechanism to infect customers indirectly. SolarWinds is a notable example."},
+{d:2,q:"Which vulnerability scanning approach provides the most thorough assessment by simulating an insider threat?",a:["External unauthenticated scan","Credentialed (authenticated) scan","Passive network scan","Port scan"],c:1,e:"Credentialed scans authenticate to target systems, allowing deeper inspection of installed software, patch levels, and configurations — similar to insider access."},
+{d:2,q:"What is the Common Vulnerability Scoring System (CVSS) used for?",a:["Classifying types of malware","Providing a standardised numerical severity score for vulnerabilities","Tracking patch deployment status","Managing security incidents"],c:1,e:"CVSS scores (0-10) quantify vulnerability severity based on exploitability and impact metrics, helping organisations prioritise remediation."},
+{d:2,q:"Which attack involves an attacker sending forged ARP messages to associate their MAC address with a legitimate IP address?",a:["DNS spoofing","IP spoofing","ARP poisoning","BGP hijacking"],c:2,e:"ARP poisoning (ARP spoofing) sends fake ARP replies on a LAN, causing traffic intended for one host to be redirected to the attacker."},
+{d:2,q:"What distinguishes a worm from a virus?",a:["Worms require user interaction; viruses do not","Worms self-replicate across networks without user interaction; viruses require a host file","Worms encrypt data; viruses do not","Worms target mobile devices; viruses target desktops"],c:1,e:"The key distinction: worms are self-propagating across networks autonomously (e.g., WannaCry), while viruses need to attach to a host file and be executed."},
+{d:2,q:"What type of attack attempts every possible combination of characters to crack a password?",a:["Dictionary attack","Rainbow table attack","Brute force attack","Credential stuffing"],c:2,e:"Brute force tries every possible combination systematically. It's guaranteed to eventually succeed but can be mitigated with account lockout and long passwords."},
+{d:2,q:"An attacker creates a fake wireless access point mimicking a legitimate network. This is called a:",a:["Rogue AP","Evil twin","Deauth attack","Wardriving setup"],c:1,e:"An evil twin is a fraudulent AP broadcasting the same SSID as a legitimate network, designed to trick users into connecting and expose their traffic."},
+{d:2,q:"Which term describes code deliberately inserted by a developer to allow future access, bypassing normal authentication?",a:["Logic bomb","Trojan","Backdoor","Rootkit"],c:2,e:"A backdoor provides covert access to a system, bypassing authentication. It may be intentionally inserted or added by an attacker after compromise."},
+{d:2,q:"What is typosquatting?",a:["Squatting on unused IP address ranges","Registering domain names that are common typos of legitimate sites to capture misdirected traffic","Creating certificates for domains you don't own","Impersonating DNS servers"],c:1,e:"Typosquatting registers misspelled variants of popular domains (e.g., gooogle.com) to serve malware or phishing content to users who mistype URLs."},
+
+// ── DOMAIN 3: Security Architecture ─────────────────────────────────
+{d:3,q:"What is the primary purpose of network segmentation?",a:["Increase internet bandwidth","Limit lateral movement by isolating network zones","Simplify IP address management","Improve Wi-Fi coverage"],c:1,e:"Network segmentation divides a network into isolated zones (e.g., DMZ, internal, guest), containing breaches and limiting an attacker's ability to move laterally."},
+{d:3,q:"A DMZ (Demilitarised Zone) is used to:",a:["Isolate internal servers from all network access","Host publicly accessible services while separating them from the internal network","Store backup data offsite","Provide a guest wireless network"],c:1,e:"A DMZ sits between external and internal firewalls, hosting public-facing services (web servers, mail) while protecting the internal network from direct exposure."},
+{d:3,q:"Which firewall type can inspect traffic at the application layer and understand specific protocols like HTTP?",a:["Packet filtering firewall","Stateful inspection firewall","Next-generation firewall (NGFW)","Proxy firewall"],c:2,e:"NGFWs operate at Layer 7, providing deep packet inspection, application awareness, intrusion prevention, and identity-based policies beyond traditional firewalls."},
+{d:3,q:"What is the function of a VLAN?",a:["Encrypt traffic between switches","Logically segment a physical network into separate broadcast domains","Provide wireless network access","Balance load across multiple servers"],c:1,e:"VLANs create logical network segments on shared physical infrastructure, improving security and reducing broadcast traffic without requiring separate hardware."},
+{d:3,q:"Which architecture places security controls as close to individual resources as possible rather than at the network perimeter?",a:["Perimeter security","Defence in depth","Zero trust architecture","Flat network architecture"],c:2,e:"Zero trust architecture eliminates implicit trust based on network location, requiring continuous verification for every access request, with security at the resource level."},
+{d:3,q:"What does SD-WAN stand for?",a:["Software-Defined Wide Area Network","Secure Domain Wireless Access Node","System-Defined WAN Appliance","Static Distribution Wide Area Network"],c:0,e:"SD-WAN uses software to control and optimise wide area network connections, often used to replace or augment traditional MPLS links with internet-based connectivity."},
+{d:3,q:"In cloud security, what does the shared responsibility model define?",a:["How costs are split between cloud provider and customer","Which security tasks are the cloud provider's responsibility vs the customer's","The SLA uptime guarantees provided by the cloud provider","How data is replicated across regions"],c:1,e:"The shared responsibility model clarifies security ownership. Typically: the provider secures the infrastructure; the customer secures their data, applications, and configurations."},
+{d:3,q:"What is the purpose of microsegmentation in a zero trust environment?",a:["Split network traffic across multiple ISPs","Create granular security zones around individual workloads to limit lateral movement","Segment storage arrays for performance","Divide DNS zones for redundancy"],c:1,e:"Microsegmentation applies fine-grained security policies at the workload level, preventing an attacker who compromises one workload from freely accessing others."},
+{d:3,q:"A company stores data in both on-premises infrastructure and a public cloud. This is called a:",a:["Private cloud","Community cloud","Multi-cloud","Hybrid cloud"],c:3,e:"A hybrid cloud combines private (on-premises or private cloud) and public cloud environments, often connected by secure tunnels or SD-WAN."},
+{d:3,q:"What is the main security advantage of containerisation (e.g., Docker)?",a:["Containers are immune to all malware","Containers provide process and file system isolation from the host and other containers","Containers automatically encrypt all data","Containers eliminate the need for patching"],c:1,e:"Containers isolate applications and their dependencies, limiting the blast radius of a compromised application — though they are not fully isolated like VMs."},
+{d:3,q:"What is an IDS in network security?",a:["A system that blocks malicious traffic in real-time","A system that monitors and alerts on suspicious activity but does not block","A device that encrypts network traffic","A system that manages firewall rules"],c:1,e:"An Intrusion Detection System (IDS) passively monitors traffic and raises alerts but doesn't act. Contrast with an IPS which actively blocks detected threats."},
+{d:3,q:"Which protocol provides secure remote access to network devices via an encrypted command-line interface?",a:["Telnet","FTP","SSH","HTTP"],c:2,e:"SSH (Secure Shell) encrypts the connection between client and server, replacing insecure protocols like Telnet and rsh for remote administration."},
+{d:3,q:"What does NAC stand for and what does it do?",a:["Network Access Control — enforces security policies before granting devices network access","Network Authentication Certificate — validates device identities","Node Administration Console — manages network equipment","Network Audit Centre — logs network activity"],c:0,e:"NAC (Network Access Control) assesses device health (patch level, AV status) before granting network access, quarantining non-compliant devices."},
+{d:3,q:"Which cloud deployment model is exclusively used by a single organisation and hosted on-premises or by a third-party provider?",a:["Public cloud","Hybrid cloud","Private cloud","Community cloud"],c:2,e:"A private cloud is dedicated to one organisation, offering greater control and isolation than a public cloud, at higher cost."},
+{d:3,q:"What is the purpose of a Web Application Firewall (WAF)?",a:["Provide VPN access for remote workers","Filter and monitor HTTP traffic to protect web applications from attacks like SQLi and XSS","Replace traditional firewalls","Scan email attachments for malware"],c:1,e:"WAFs inspect HTTP/HTTPS requests, applying rules to detect and block web-layer attacks (OWASP Top 10), protecting applications at Layer 7."},
+{d:3,q:"In IaaS, PaaS, and SaaS, which model gives the customer the most control over the operating system?",a:["SaaS","PaaS","IaaS","All provide equal control"],c:2,e:"IaaS (Infrastructure as a Service) gives customers control over OS, middleware, and applications. In PaaS the OS is managed by the provider; in SaaS, everything is managed."},
+{d:3,q:"What does a jump server (bastion host) do?",a:["Provides load balancing for web applications","Acts as a hardened gateway for administrative access to internal systems","Stores encryption keys securely","Provides DNS resolution for internal networks"],c:1,e:"A jump server is a hardened, monitored server that acts as the sole access point for administrators to reach internal systems, reducing the attack surface."},
+{d:3,q:"Which concept describes designing a system so that a component failure results in a secure state rather than an insecure one?",a:["Fail open","Fail secure (fail closed)","High availability","Graceful degradation"],c:1,e:"Fail secure means that when a component fails, access is denied by default. A fail open approach — granting access on failure — introduces risk. Firewalls should fail closed."},
+
+// ── DOMAIN 4: Security Operations ─────────────────────────────────────
+{d:4,q:"What is the purpose of a SIEM system?",a:["Manage software patches across endpoints","Collect, aggregate, and correlate log data to detect security events","Encrypt data in transit","Scan for vulnerabilities on a schedule"],c:1,e:"A SIEM (Security Information and Event Management) system centralises log collection, correlates events across sources, and provides alerts, dashboards, and forensic capabilities."},
+{d:4,q:"What does the acronym IOC stand for in incident response?",a:["Internet Operations Centre","Indicator of Compromise","Information Operations Command","Infrastructure Oversight Control"],c:1,e:"Indicators of Compromise (IOCs) are forensic artefacts (IP addresses, hashes, registry keys) that suggest a system has been compromised."},
+{d:4,q:"Which phase of the incident response lifecycle involves restoring systems to normal operation?",a:["Identification","Containment","Recovery","Lessons learned"],c:2,e:"Recovery involves restoring affected systems and services to normal operation after an incident, following successful eradication of the threat."},
+{d:4,q:"What is the correct order of the NIST incident response lifecycle?",a:["Identify → Protect → Detect → Respond → Recover","Prepare → Identify → Contain → Eradicate → Recover → Lessons learned","Detect → Analyse → Contain → Remediate","Plan → Execute → Review → Improve"],c:1,e:"NIST SP 800-61 defines: Preparation → Identification → Containment → Eradication → Recovery → Post-incident activity (Lessons Learned)."},
+{d:4,q:"Which type of backup only copies data that has changed since the last FULL backup?",a:["Incremental","Differential","Snapshot","Mirror"],c:1,e:"Differential backups copy all changes since the last full backup. Incremental only copies changes since the last backup of any type, requiring more tapes to restore."},
+{d:4,q:"What is chain of custody in digital forensics?",a:["The sequence of encryption applied to evidence","The documented record of who collected, handled, and accessed evidence","The process of hashing evidence files","The protocol for notifying stakeholders of an incident"],c:1,e:"Chain of custody documents the handling of evidence from collection to court, ensuring its integrity and admissibility in legal proceedings."},
+{d:4,q:"Which tool is most appropriate for capturing network packets for forensic analysis?",a:["Nmap","Wireshark","Nessus","Metasploit"],c:1,e:"Wireshark is a widely-used packet capture and analysis tool (using libpcap), allowing forensic investigation of network traffic."},
+{d:4,q:"What does vulnerability management primarily involve?",a:["Responding to active security incidents","Identifying, classifying, prioritising, and remediating security vulnerabilities","Training users on phishing awareness","Managing user account permissions"],c:1,e:"Vulnerability management is a continuous process: scan for vulnerabilities, assess severity (using CVSS), prioritise remediation, patch, and verify."},
+{d:4,q:"What is the difference between a vulnerability scan and a penetration test?",a:["There is no difference — they are the same","A vulnerability scan identifies potential weaknesses; a pen test actively exploits them to confirm impact","A pen test is automated; a vulnerability scan is manual","Vulnerability scans are illegal without authorisation; pen tests are not"],c:1,e:"Vulnerability scanning is largely automated and identifies potential weaknesses without exploiting them. Penetration testing actively exploits vulnerabilities to assess real-world impact, simulating an attacker."},
+{d:4,q:"Which log type would most likely help you investigate a failed login attempt on a Windows server?",a:["Application log","System log","Security log","Setup log"],c:2,e:"Windows Security logs record authentication events (logon successes, failures), privilege use, and account management — critical for investigating access incidents."},
+{d:4,q:"What is data loss prevention (DLP)?",a:["Backup and recovery of lost data","Technology and policies that prevent sensitive data from leaving the organisation without authorisation","Encrypting data to prevent theft","Deleting data that is no longer needed"],c:1,e:"DLP solutions monitor and control data movement (email, USB, cloud), detecting and blocking unauthorised exfiltration of sensitive information."},
+{d:4,q:"What is a SOC (Security Operations Centre)?",a:["A physical room containing all network hardware","A team and facility dedicated to monitoring, detecting, and responding to security threats 24/7","A compliance certification body","A government cybersecurity agency"],c:1,e:"A SOC is a centralised function staffed by security analysts who use tools like SIEM, EDR, and threat intelligence feeds to continuously monitor and respond to threats."},
+{d:4,q:"Which endpoint security solution provides real-time monitoring, detection, and response capabilities on individual devices?",a:["Antivirus (AV)","Data Loss Prevention (DLP)","Endpoint Detection and Response (EDR)","Host-based Intrusion Detection System (HIDS)"],c:2,e:"EDR solutions provide advanced endpoint visibility with behavioural analysis, threat hunting, and automated response — going beyond signature-based AV."},
+{d:4,q:"What is the primary goal of a penetration test?",a:["Identify all vulnerabilities in a system","Simulate a real-world attack to evaluate security controls","Ensure compliance with regulations","Perform forensic investigation after a breach"],c:1,e:"Pen tests simulate realistic attacks to find exploitable vulnerabilities and measure the effectiveness of security controls, reporting findings for remediation."},
+{d:4,q:"In the context of access control, what does RBAC stand for?",a:["Rule-Based Access Control","Role-Based Access Control","Risk-Based Access Control","Resource-Based Access Control"],c:1,e:"RBAC assigns permissions based on job role rather than per-user, simplifying administration. A user inherits access rights from their role."},
+{d:4,q:"What is the purpose of log retention policies?",a:["Improve system performance by deleting old logs","Define how long logs must be kept for security investigations and compliance","Restrict who can view system logs","Encrypt log files at rest"],c:1,e:"Log retention policies define minimum retention periods (often driven by regulation — e.g., PCI DSS requires 1 year) ensuring logs are available for forensic investigation."},
+{d:4,q:"What is threat hunting?",a:["Automated scanning for known malware signatures","A proactive search for hidden threats or attackers that have evaded existing detection","Responding to alerts from a SIEM","Training employees to identify phishing emails"],c:1,e:"Threat hunting is a human-led, hypothesis-driven process of searching for attackers who have already infiltrated a network but haven't triggered automated alerts."},
+{d:4,q:"Which command-line tool is used on Linux to display active network connections and listening ports?",a:["ipconfig","netstat","nslookup","tracert"],c:1,e:"netstat (or ss on modern Linux) displays active connections, listening ports, and socket statistics — invaluable for detecting unexpected network activity."},
+{d:4,q:"What is a tabletop exercise in incident response?",a:["A physical security drill","A discussion-based simulation where stakeholders walk through a hypothetical incident scenario","An automated test of backup and recovery systems","A live red team vs blue team exercise"],c:1,e:"Tabletop exercises are low-cost, discussion-based exercises where teams talk through their response to a scenario, identifying gaps without impacting production systems."},
+{d:4,q:"What does the acronym RTO mean in business continuity?",a:["Recovery Time Objective — the maximum acceptable time to restore a system","Real-Time Operations — continuous system monitoring","Risk Threshold Override — bypassing security for emergencies","Redundant Technology Operations — failover systems"],c:0,e:"RTO defines the maximum tolerable downtime: how quickly a system must be restored after a failure. Closely paired with RPO (Recovery Point Objective)."},
+{d:4,q:"What is the difference between symmetric and asymmetric encryption in terms of key usage?",a:["Symmetric is slower; asymmetric is faster","Symmetric uses one shared key; asymmetric uses a public/private key pair","Symmetric is more secure; asymmetric is weaker","They use the same mechanism but different algorithms"],c:1,e:"Symmetric (e.g., AES) uses one secret key for both encryption and decryption. Asymmetric (e.g., RSA) uses a key pair — anything encrypted with the public key can only be decrypted with the private key."},
+{d:4,q:"What is the purpose of a patch management program?",a:["Deploy new software features to users","Systematically identify, test, and apply security patches to reduce vulnerability exposure","Monitor employee internet usage","Scan for rogue devices on the network"],c:1,e:"Patch management ensures software and firmware vulnerabilities are addressed promptly, reducing the window of exploitability while managing risks from patches themselves."},
+{d:4,q:"Which framework provides a structured approach to incident response with five core functions: Identify, Protect, Detect, Respond, Recover?",a:["ISO 27001","NIST Cybersecurity Framework (CSF)","COBIT","PCI DSS"],c:1,e:"The NIST Cybersecurity Framework (CSF) provides a common language and set of activities organised around five functions for managing cybersecurity risk."},
+{d:4,q:"What is the purpose of a baseline configuration in security?",a:["Encrypt all data on a device","Define a known-good standard configuration to detect deviations that may indicate compromise","Provide a template for onboarding new users","Set firewall rules for internet access"],c:1,e:"Baselines document the expected 'golden' configuration. Deviations (new services, changed settings) can indicate misconfiguration or compromise and trigger investigation."},
+{d:4,q:"Which type of analysis examines malware without executing it?",a:["Dynamic analysis","Static analysis","Behavioural analysis","Memory forensics"],c:1,e:"Static analysis examines malware code, strings, and metadata without running it — safer but limited. Dynamic analysis executes it in a sandbox to observe behaviour."},
+
+// ── DOMAIN 5: Program Management & Oversight ─────────────────────────
+{d:5,q:"What is the difference between a policy, a standard, and a procedure?",a:["They are different names for the same document","Policy states intent; standards define specific requirements; procedures detail step-by-step instructions","Standards are mandatory; policies are optional guidelines","Procedures apply to technical staff only; policies apply to all staff"],c:1,e:"Policies express management intent and direction. Standards specify mandatory requirements to meet policy goals. Procedures provide step-by-step instructions for implementation."},
+{d:5,q:"What does GDPR primarily protect?",a:["Intellectual property of software companies","The personal data and privacy rights of EU citizens","Payment card data of consumers","Critical national infrastructure"],c:1,e:"GDPR (General Data Protection Regulation) is an EU regulation giving individuals rights over their personal data and placing strict obligations on organisations processing it."},
+{d:5,q:"What is a Business Impact Analysis (BIA)?",a:["A financial audit of IT spending","An assessment that identifies critical business functions and the impact of disrupting them","A risk scoring methodology","An analysis of security tool vendor products"],c:1,e:"A BIA identifies critical processes, the maximum tolerable downtime (MTD), and the potential financial/operational impact of disruption — underpinning continuity planning."},
+{d:5,q:"What is a risk register?",a:["A list of all security vulnerabilities in a system","A document that records identified risks, their likelihood, impact, and treatment decisions","A log of security incidents","A list of approved security vendors"],c:1,e:"A risk register is a living document tracking identified risks, their assessment (likelihood × impact), risk owners, and the chosen treatment (accept, mitigate, transfer, avoid)."},
+{d:5,q:"Which data classification label would typically be applied to information whose unauthorised disclosure could cause serious damage to national security?",a:["Confidential","Secret","Public","Internal use"],c:1,e:"In government classification, 'Secret' applies to information whose disclosure could cause serious damage to national security. 'Top Secret' applies to exceptionally grave damage."},
+{d:5,q:"What is the purpose of a security awareness training programme?",a:["Teach employees to write secure code","Reduce human-factor risks by educating staff on threats like phishing, social engineering, and safe practices","Test network security controls","Meet software development standards"],c:1,e:"Security awareness training is one of the most cost-effective controls, targeting the human element — the most commonly exploited attack vector — through education and simulated exercises."},
+{d:5,q:"Which regulation specifically mandates security controls for organisations handling payment card data?",a:["HIPAA","SOX","PCI DSS","GDPR"],c:2,e:"PCI DSS (Payment Card Industry Data Security Standard) is a contractual standard from card brands requiring specific controls for any organisation processing, storing, or transmitting cardholder data."},
+{d:5,q:"What does a Data Protection Officer (DPO) do?",a:["Encrypts all sensitive data in the organisation","Oversees data protection strategy and ensures compliance with data privacy regulations like GDPR","Manages backup and recovery systems","Conducts penetration tests"],c:1,e:"A DPO advises organisations on data protection obligations, monitors compliance, acts as a point of contact for regulators, and is mandatory for certain organisations under GDPR."},
+{d:5,q:"Which risk treatment option involves shifting risk to a third party (e.g., purchasing insurance or outsourcing)?",a:["Risk avoidance","Risk acceptance","Risk mitigation","Risk transference"],c:3,e:"Risk transference shifts the financial or operational impact of a risk to a third party — typically through cyber insurance, contractual indemnities, or outsourcing."},
+{d:5,q:"What is the purpose of a third-party risk management (TPRM) programme?",a:["Manage relationships with cloud providers only","Assess and manage the security risks posed by vendors, suppliers, and partners who access your systems or data","Evaluate employee performance","Conduct internal audits of IT systems"],c:1,e:"TPRM evaluates the security posture of third parties (vendors, contractors, partners) who could introduce risk through their access to your systems, data, or supply chain."},
+{d:5,q:"What is a security audit?",a:["A real-time monitoring activity","A systematic, independent examination of security controls to assess compliance and effectiveness","A type of penetration test","A vulnerability scanning exercise"],c:1,e:"A security audit is a structured review of policies, controls, and processes against defined standards (e.g., ISO 27001), typically performed by internal or external auditors."},
+{d:5,q:"In information security, what is 'data sovereignty'?",a:["The concept that data owners control their data","The principle that data is subject to the laws of the country where it is stored or processed","The right to encrypt your own data","The obligation to delete data on request"],c:1,e:"Data sovereignty recognises that data is governed by the legal jurisdiction where it physically resides, which is crucial for multinational organisations choosing cloud regions."},
+{d:5,q:"What does the principle of data minimisation require?",a:["Encrypt all data using the strongest available algorithm","Collect and retain only the minimum amount of personal data necessary for the stated purpose","Store all data on local servers","Share data only with law enforcement"],c:1,e:"Data minimisation (a GDPR principle) requires organisations to collect only what is necessary for a specific, legitimate purpose and not retain it beyond that purpose."},
+{d:5,q:"What is a Memorandum of Understanding (MOU) in the context of security agreements?",a:["A binding legal contract with financial penalties","A non-binding agreement documenting mutual expectations and intentions between two organisations","A software licence agreement","A technical specification for security controls"],c:1,e:"An MOU is a formal but typically non-binding document that outlines the roles, responsibilities, and expectations between parties — often used before a more detailed contract is in place."},
+{d:5,q:"Which framework is widely used for IT governance and aligns IT with business objectives?",a:["NIST CSF","COBIT","ISO 27001","PCI DSS"],c:1,e:"COBIT (Control Objectives for Information and Related Technologies) is an IT governance framework developed by ISACA that helps organisations align IT strategy with business goals."},
+{d:5,q:"What is the purpose of an acceptable use policy (AUP)?",a:["Define the encryption standards for company devices","Set out the rules and expectations for acceptable use of company IT resources","Govern data sharing with third parties","Outline the incident response procedures"],c:1,e:"An AUP defines what constitutes acceptable and unacceptable use of company systems, networks, and data — protecting both the organisation and its users."},
+{d:5,q:"What does ISO/IEC 27001 provide?",a:["A scoring system for vulnerability severity","An internationally recognised standard for establishing and managing an Information Security Management System (ISMS)","A framework for cloud security governance","Mandatory payment card security requirements"],c:1,e:"ISO/IEC 27001 specifies requirements for implementing, operating, and continually improving an ISMS, and is the basis for independent certification of information security practices."},
+{d:5,q:"What is the concept of 'privacy by design'?",a:["Encrypting all user data by default","Embedding privacy protections into systems and processes from the outset, rather than as an afterthought","Anonymising all collected data","Storing personal data only in encrypted cloud storage"],c:1,e:"Privacy by design (Article 25 of GDPR) requires data protection to be built into system design from the start, not bolted on later — including data minimisation and purpose limitation."},
+];
+
+// ═══════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════
+let state = {
+  mode: null, // 'full' | 'custom'
+  questions: [],
+  answers: {},    // index -> answer index (-1 = skipped)
+  flags: new Set(),
+  current: 0,
+  timed: true,
+  timerSeconds: 0,
+  timerInterval: null,
+  examStart: null,
+  examEnd: null,
+  customTopics: new Set([1,2,3,4,5]),
+  customCount: 25,
+  customTimed: true,
+  lastExamConfig: null
+};
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// BUILDER
+// ═══════════════════════════════════════
+function initBuilder() {
+  const grid = document.getElementById('topicGrid');
+  grid.innerHTML = '';
+  for (const [id, d] of Object.entries(DOMAINS)) {
+    const count = QUESTIONS.filter(q => q.d == id).length;
+    const t = document.createElement('div');
+    t.className = 'topic-toggle' + (state.customTopics.has(+id) ? ' selected' : '');
+    t.innerHTML = `<div class="dot"></div><span>${d.name} <small style="color:var(--text-dim)">(${count}q)</small></span>`;
+    t.onclick = () => toggleTopic(+id, t);
+    grid.appendChild(t);
+  }
+  updateAvailNote();
+}
+
+function toggleTopic(id, el) {
+  if (state.customTopics.has(id)) {
+    if (state.customTopics.size <= 1) return;
+    state.customTopics.delete(id);
+    el.classList.remove('selected');
+  } else {
+    state.customTopics.add(id);
+    el.classList.add('selected');
+  }
+  updateAvailNote();
+}
+
+function updateAvailNote() {
+  const avail = QUESTIONS.filter(q => state.customTopics.has(q.d)).length;
+  const note = document.getElementById('qAvailNote');
+  note.textContent = `${avail} questions available from selected domains.`;
+  if (state.customCount > avail) {
+    state.customCount = avail;
+    document.getElementById('customQNum').value = avail;
+  }
+}
+
+function setQCount(n, el) {
+  state.customCount = n;
+  document.getElementById('customQNum').value = n;
+  document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function customQInput(el) {
+  const avail = QUESTIONS.filter(q => state.customTopics.has(q.d)).length;
+  let v = parseInt(el.value) || 10;
+  v = Math.min(Math.max(v, 1), avail);
+  state.customCount = v;
+  document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+}
+
+function setTimed(t) {
+  state.customTimed = t;
+  document.getElementById('timerOn').classList.toggle('active', t);
+  document.getElementById('timerOff').classList.toggle('active', !t);
+}
+
+// ═══════════════════════════════════════
+// EXAM START
+// ═══════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startFullExam() {
+  const qs = shuffle(QUESTIONS).slice(0, 90);
+  launchExam(qs, true, 90 * 60, 'full');
+}
+
+function startCustomExam() {
+  const pool = QUESTIONS.filter(q => state.customTopics.has(q.d));
+  const n = Math.min(state.customCount, pool.length);
+  const qs = shuffle(pool).slice(0, n);
+  const secs = state.customTimed ? n * 60 : 0;
+  launchExam(qs, state.customTimed, secs, 'custom');
+}
+
+function launchExam(qs, timed, totalSecs, mode) {
+  state.mode = mode;
+  state.questions = qs;
+  state.answers = {};
+  state.flags = new Set();
+  state.current = 0;
+  state.timed = timed;
+  state.timerSeconds = totalSecs;
+  state.examStart = Date.now();
+  state.examEnd = null;
+  state.lastExamConfig = { qs, timed, totalSecs, mode };
+
+  if (state.timerInterval) clearInterval(state.timerInterval);
+
+  buildQGrid();
+  renderQuestion();
+  updateProgress();
+
+  const timerCard = document.getElementById('timerCard');
+  const topBadge = document.getElementById('topTimerBadge');
+
+  if (timed) {
+    timerCard.style.display = 'block';
+    topBadge.style.display = 'inline';
+    updateTimer();
+    state.timerInterval = setInterval(() => {
+      state.timerSeconds--;
+      updateTimer();
+      if (state.timerSeconds <= 0) {
+        clearInterval(state.timerInterval);
+        showResults();
+      }
+    }, 1000);
+  } else {
+    timerCard.style.display = 'none';
+    topBadge.style.display = 'none';
+  }
+
+  showScreen('screenExam');
+}
+
+function updateTimer() {
+  const m = Math.floor(state.timerSeconds / 60);
+  const s = state.timerSeconds % 60;
+  const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const el = document.getElementById('timerDisplay');
+  const badge = document.getElementById('topTimerBadge');
+  el.textContent = str;
+  badge.textContent = str;
+  el.className = 'timer-display' + (state.timerSeconds < 300 ? ' critical' : state.timerSeconds < 600 ? ' warning' : '');
+}
+
+// ═══════════════════════════════════════
+// RENDER QUESTION
+// ═══════════════════════════════════════
+function renderQuestion() {
+  const i = state.current;
+  const q = state.questions[i];
+  const total = state.questions.length;
+  const answered = state.answers[i];
+
+  document.getElementById('examProgressLabel').textContent = `Question ${i+1} of ${total}`;
+  document.getElementById('examProgressFill').style.width = `${((i+1)/total)*100}%`;
+  document.getElementById('qNum').textContent = `Q${i+1}`;
+  document.getElementById('qDomain').textContent = DOMAINS[q.d].short;
+  document.getElementById('qText').innerHTML = q.q;
+
+  const flagBtn = document.getElementById('flagBtn');
+  flagBtn.className = 'q-flag' + (state.flags.has(i) ? ' flagged' : '');
+  flagBtn.textContent = state.flags.has(i) ? '🚩 Flagged' : '🚩 Flag';
+
+  const answersDiv = document.getElementById('answersDiv');
+  answersDiv.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  const shuffledOpts = q.a.map((text, idx) => ({ text, origIdx: idx }));
+
+  shuffledOpts.forEach((opt, visIdx) => {
+    const div = document.createElement('div');
+    div.className = 'answer-opt';
+    if (answered !== undefined && answered === opt.origIdx) div.classList.add('selected');
+    div.innerHTML = `<span class="opt-letter">${letters[visIdx]}</span><span class="opt-text">${opt.text}</span>`;
+    div.onclick = () => selectAnswer(opt.origIdx);
+    answersDiv.appendChild(div);
+  });
+
+  document.getElementById('explanationDiv').className = 'explanation';
+  document.getElementById('explanationDiv').innerHTML = '';
+
+  document.getElementById('prevBtn').style.opacity = i === 0 ? '0.3' : '1';
+  document.getElementById('prevBtn').disabled = i === 0;
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (i === total - 1) {
+    nextBtn.textContent = 'Finish Exam →';
+    nextBtn.onclick = confirmEndExam;
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.onclick = () => navigate(1);
+  }
+
+  updateQGrid();
+}
+
+function selectAnswer(optIdx) {
+  state.answers[state.current] = optIdx;
+  renderQuestion();
+}
+
+function toggleFlag() {
+  const i = state.current;
+  if (state.flags.has(i)) state.flags.delete(i);
+  else state.flags.add(i);
+  renderQuestion();
+}
+
+function navigate(dir) {
+  const next = state.current + dir;
+  if (next < 0 || next >= state.questions.length) return;
+  state.current = next;
+  renderQuestion();
+}
+
+// ═══════════════════════════════════════
+// Q GRID SIDEBAR
+// ═══════════════════════════════════════
+function buildQGrid() {
+  const grid = document.getElementById('qGrid');
+  grid.innerHTML = '';
+  state.questions.forEach((q, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'q-dot';
+    dot.textContent = i + 1;
+    dot.onclick = () => { state.current = i; renderQuestion(); };
+    dot.id = `qdot-${i}`;
+    grid.appendChild(dot);
+  });
+}
+
+function updateQGrid() {
+  state.questions.forEach((q, i) => {
+    const dot = document.getElementById(`qdot-${i}`);
+    if (!dot) return;
+    dot.className = 'q-dot';
+    if (i === state.current) dot.classList.add('current');
+    else if (state.flags.has(i)) dot.classList.add('flagged');
+    else if (state.answers[i] !== undefined) dot.classList.add('answered');
+  });
+}
+
+function updateProgress() {
+  const answered = Object.keys(state.answers).length;
+  const total = state.questions.length;
+  document.getElementById('examProgressLabel').textContent = `Question ${state.current+1} of ${total} · ${answered} answered`;
+}
+
+// ═══════════════════════════════════════
+// END EXAM
+// ═══════════════════════════════════════
+function confirmEndExam() {
+  const answered = Object.keys(state.answers).length;
+  const total = state.questions.length;
+  const skipped = total - answered;
+  const msg = skipped > 0
+    ? `You have ${skipped} unanswered question${skipped>1?'s':''}. Are you sure you want to end the exam?`
+    : 'Ready to submit your exam?';
+  if (confirm(msg)) {
+    if (state.timerInterval) clearInterval(state.timerInterval);
+    state.examEnd = Date.now();
+    showResults();
+  }
+}
+
+// ═══════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════
+function showResults() {
+  state.examEnd = state.examEnd || Date.now();
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  document.getElementById('topTimerBadge').style.display = 'none';
+
+  const qs = state.questions;
+  let correct = 0, incorrect = 0, skipped = 0;
+  const domainStats = {};
+  Object.values(DOMAINS).forEach((d,i) => {
+    const id = +Object.keys(DOMAINS)[i];
+    domainStats[id] = { correct:0, total:0, name:d.name, short:d.short, color:d.color };
+  });
+
+  qs.forEach((q, i) => {
+    const ans = state.answers[i];
+    domainStats[q.d].total++;
+    if (ans === undefined) { skipped++; }
+    else if (ans === q.c) { correct++; domainStats[q.d].correct++; }
+    else { incorrect++; }
+  });
+
+  const pct = Math.round((correct / qs.length) * 100);
+  // Scaled score: 100-900, pass = 750 (~83.3% of 900 range above 100)
+  // Simplified: score = 100 + (pct/100)*800, pass = 750
+  const scaled = Math.round(100 + (correct / qs.length) * 800);
+  const pass = scaled >= 750;
+
+  document.getElementById('scoreBig').textContent = `${pct}%`;
+  document.getElementById('scoreLabel').textContent = `Scaled Score: ${scaled} / 900`;
+  const verdictEl = document.getElementById('verdictBadge');
+  verdictEl.className = 'verdict ' + (pass ? 'pass' : 'fail');
+  verdictEl.textContent = pass ? '✓ PASS' : '✗ FAIL';
+  document.getElementById('resultSubtext').textContent = pass
+    ? `Congratulations — you'd pass with a score of ${scaled}. The passing threshold is 750.`
+    : `You'd need a scaled score of 750 to pass. Keep going — you're ${750 - scaled} points away.`;
+
+  document.getElementById('resCorrect').textContent = correct;
+  document.getElementById('resIncorrect').textContent = incorrect;
+  document.getElementById('resSkipped').textContent = skipped;
+
+  const elapsed = Math.round((state.examEnd - state.examStart) / 1000);
+  const em = Math.floor(elapsed/60), es = elapsed%60;
+  document.getElementById('resTime').textContent = `${String(em).padStart(2,'0')}:${String(es).padStart(2,'0')}`;
+
+  drawPieChart(domainStats);
+  buildChartLegend(domainStats);
+  buildReview();
+
+  showScreen('screenResults');
+  window.scrollTo(0,0);
+}
+
+function drawPieChart(domainStats) {
+  const canvas = document.getElementById('pieChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const cx = W/2, cy = H/2, r = Math.min(W,H)/2 - 10;
+  const activeDomains = Object.entries(domainStats).filter(([,d]) => d.total > 0);
+  const total = activeDomains.reduce((s,[,d]) => s+d.total, 0);
+
+  let startAngle = -Math.PI/2;
+  activeDomains.forEach(([id, d]) => {
+    const slice = (d.total / total) * 2 * Math.PI;
+    const pct = d.total ? d.correct/d.total : 0;
+    // outer ring = domain slice, inner fill = score
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+    ctx.closePath();
+    ctx.fillStyle = d.color + '33';
+    ctx.fill();
+    ctx.strokeStyle = d.color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // inner arc representing correctness
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r * 0.65, startAngle, startAngle + slice * pct);
+    ctx.closePath();
+    ctx.fillStyle = d.color + 'aa';
+    ctx.fill();
+
+    startAngle += slice;
+  });
+
+  // centre hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.35, 0, 2*Math.PI);
+  ctx.fillStyle = '#0d1320';
+  ctx.fill();
+
+  // centre text
+  const overallPct = activeDomains.reduce((s,[,d]) => s+d.correct,0);
+  const overallTotal = activeDomains.reduce((s,[,d]) => s+d.total,0);
+  const pctTxt = overallTotal ? Math.round((overallPct/overallTotal)*100) : 0;
+  ctx.fillStyle = '#eaf2ff';
+  ctx.font = `bold 26px 'Space Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${pctTxt}%`, cx, cy);
+}
+
+function buildChartLegend(domainStats) {
+  const leg = document.getElementById('chartLegend');
+  leg.innerHTML = '';
+  Object.entries(domainStats).filter(([,d])=>d.total>0).forEach(([id,d]) => {
+    const pct = d.total ? Math.round((d.correct/d.total)*100) : 0;
+    const row = document.createElement('div');
+    row.className = 'legend-row';
+    row.innerHTML = `
+      <div class="left">
+        <div class="legend-swatch" style="background:${d.color}"></div>
+        <span>${d.short}</span>
+      </div>
+      <span class="pct" style="color:${d.color}">${d.correct}/${d.total} (${pct}%)</span>
+    `;
+    leg.appendChild(row);
+  });
+}
+
+function buildReview() {
+  const list = document.getElementById('reviewList');
+  list.innerHTML = '';
+  state.questions.forEach((q, i) => {
+    const ans = state.answers[i];
+    let status = 'skipped';
+    if (ans !== undefined) status = ans === q.c ? 'correct' : 'incorrect';
+
+    const labels = {'correct':'✓ Correct','incorrect':'✗ Incorrect','skipped':'— Skipped'};
+    const colors = {'correct':'var(--accent4)','incorrect':'var(--accent3)','skipped':'var(--text-dim)'};
+
+    const div = document.createElement('div');
+    div.className = 'review-q';
+
+    const letters = ['A','B','C','D'];
+    const userAns = ans !== undefined ? `${letters[ans]}: ${q.a[ans]}` : 'Not answered';
+    const correctAns = `${letters[q.c]}: ${q.a[q.c]}`;
+
+    div.innerHTML = `
+      <div class="review-q-header" onclick="toggleReview(this)">
+        <div class="left">
+          <div class="indicator ${status}"></div>
+          <span style="color:var(--text-dim);font-family:var(--mono);font-size:.7rem">Q${i+1}</span>
+          <span style="color:${colors[status]};font-family:var(--mono);font-size:.75rem">${labels[status]}</span>
+          <span style="color:var(--text-dim);font-size:.75rem;margin-left:.5rem">${DOMAINS[q.d].short}</span>
+        </div>
+        <span style="color:var(--text-dim);font-size:.8rem">▾</span>
+      </div>
+      <div class="review-q-body">
+        <p class="q">${q.q}</p>
+        <p class="your-ans" style="color:${colors[status]}">Your answer: ${userAns}</p>
+        ${status !== 'correct' ? `<p class="correct-ans">Correct answer: ${correctAns}</p>` : ''}
+        <p class="expl"><strong>Explanation:</strong> ${q.e}</p>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function toggleReview(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════
+// RETAKE
+// ═══════════════════════════════════════
+function retakeExam() {
+  if (state.mode === 'full') startFullExam();
+  else if (state.mode === 'custom') {
+    showScreen('screenBuilder');
+    initBuilder();
+  }
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initBuilder();
+  document.getElementById('statQ').textContent = QUESTIONS.length + '+';
+
+  // Make sure builder reinitialises when visited from home
+  document.getElementById('screenHome').querySelectorAll('.mode-card')[1].onclick = () => {
+    initBuilder();
+    showScreen('screenBuilder');
+  };
+});
+</script>
+</body>
+</html>
