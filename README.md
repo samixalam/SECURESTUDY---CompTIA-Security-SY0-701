@@ -55,9 +55,9 @@ After any exam you get a full breakdown:
 
 ## How to Use It
 
-1. Download `secplus-practice.html`
-2. Open it in any modern browser (Chrome, Firefox, Edge, Safari)
-3. That's it — no internet connection required once downloaded
+1. Open the following link: https://samixalam.github.io/SECURESTUDY---CompTIA-Security-SY0-701/
+2. Consider bookmarking the link. Spaced repetition is great for exam prep!
+3. Take the tests! 
 
 ---
 
